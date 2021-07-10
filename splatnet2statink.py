@@ -19,6 +19,13 @@ from io import BytesIO
 from operator import itemgetter
 from distutils.version import StrictVersion
 from subprocess import call
+import mysql.connector
+
+#MySQL parameters
+with open('mysqlconfig.json', 'r') as f:
+    mysqlconfig = json.load(f)
+
+
 # PIL/Pillow imported at bottom
 
 A_VERSION = "1.5.11"
@@ -1199,6 +1206,31 @@ def post_battle(i, results, s_flag, t_flag, m_flag, sendgears, debug, ismonitor=
 	#**************
 	#*** OUTPUT ***
 	#**************
+
+	#Insert match data in database
+	dbdata = payload
+	dbdata.pop('image_gear', None)
+	dbdata.pop('agent_variables', None)
+	dbdata.pop('image_result', None)
+	dbdata.pop('players', None)
+	dbdata.pop('splatnet_json', None)
+	dbdata.pop('gears', None)
+	fields = dbdata.keys()
+	values = []
+	for v in dbdata.keys():
+		values.append(str(dbdata[v]))
+
+	fields = '`, `'.join(fields)
+	values = '", "'.join(values)
+	query = 'INSERT INTO '+mysqlconfig['table']+' (`'+fields+'`) VALUES ("'+values+'") ON DUPLICATE KEY UPDATE uuid=uuid'
+
+	cnx = mysql.connector.connect(user=mysqlconfig['username'], password=mysqlconfig['password'], database=mysqlconfig['database'], host=mysqlconfig['host'])
+	mysqlcursor = cnx.cursor()
+	mysqlcursor.execute(query)
+	cnx.commit()
+	mysqlcursor.close()
+	cnx.close()
+
 	if debug:
 		print("")
 		print(json.dumps(payload).replace("'", "\'"))
