@@ -1232,7 +1232,8 @@ def post_battle(i, results, s_flag, t_flag, m_flag, sendgears, debug, ismonitor=
 	cnx.close()
 
 	#Generate HTML template
-	htmlgen = requests.post('http://live.javi.ink/gen-lastmatches.php', headers='', data='', allow_redirects=False)
+	#htmlgen = requests.post('http://live.javi.ink/gen-lastmatches.php', headers='', data='', allow_redirects=False)
+	htmlgen = os.system('php ../gen-lastmatches.php')
 
 	if debug:
 		print("")
